@@ -1,23 +1,35 @@
-package mortgage;
+package mortgageCalculations;
 
 import java.math.BigDecimal;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
-public class MortgageCalculator {
+public class Mortgage {
 
     //variables set by User
     private BigDecimal income;
+
     private BigDecimal loanValue;
+
     private BigDecimal homeValue;
+
     private BigDecimal yearlyInterestRate;
+
     private int paymentTermInYears;
+
     private BigDecimal monthlyCosts;
+
+    private static int ROUNDING_MODE = BigDecimal.ROUND_HALF_EVEN;
+
+    private MathContext precision = new MathContext(5);
 
     //Maximum loan allowed is 4 times the income
     private final BigDecimal incomeBasedLimit = new BigDecimal(4);
 
     /////////////////////////////Business Rules//////////////////////////////////////////
 
-    public Boolean isMortgageApproved(){
+    public Boolean mortgageIsApproved(){
         if (loanValueInAccordanceWithIncomeBasedLimit() && loanValueSmallerThanHomeValue()){
             return true;
         }else{
@@ -26,7 +38,7 @@ public class MortgageCalculator {
     }
 
     public Boolean loanValueInAccordanceWithIncomeBasedLimit (){
-        BigDecimal maxLoanAllowed = getIncome().multiply(getIncomeBasedLimit());
+        BigDecimal maxLoanAllowed = getIncome().multiply(incomeBasedLimit);
         return (getLoanValue().compareTo(maxLoanAllowed) <= 0);
     }
 
@@ -38,16 +50,16 @@ public class MortgageCalculator {
     public BigDecimal calculateMonthlyCosts(){
 
         int paymentTermInMonths = getPaymentTermInYears()*12;
-        BigDecimal monthlyInterestRate = getYearlyInterestRate().divide(new BigDecimal(12));
+        BigDecimal monthlyInterestRate = getYearlyInterestRate().divide(new BigDecimal(12),ROUNDING_MODE);
         BigDecimal monthlyPayment;
 
         //Interest in decimal is monthlyInterest + 1
         BigDecimal interestInDecimal = monthlyInterestRate.add(new BigDecimal(1));
 
         monthlyPayment = homeValue.multiply((monthlyInterestRate.multiply(interestInDecimal.pow(paymentTermInMonths)))
-                                  .divide(interestInDecimal.pow(paymentTermInMonths).subtract(new BigDecimal(1))));
+                                  .divide(interestInDecimal.pow(paymentTermInMonths).subtract(new BigDecimal(1)),ROUNDING_MODE));
 
-        return monthlyPayment;
+        return monthlyPayment.round(precision);
     }
 
     ///////////////////////////////getters and setters///////////////////////////////
